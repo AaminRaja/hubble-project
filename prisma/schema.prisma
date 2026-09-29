@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Show {
+  id        Int      @id
+  showName  String   @map("show_name")
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+
+  exhibitors Exhibitor[]
+
+  @@map("shows")
+}
+
+model Exhibitor {
+  id            Int     @id
+  companyName   String  @map("company_name")
+  country       String?
+  squareLogo    String? @map("square_logo")
+  userId        String  @map("user_id")
+  showId        Int     @map("show_id")
+  exhibitorType String? @map("exhibitor_type")
+  sponsorship   String?
+  boothNo       String? @map("booth_no")
+  hallNo        String? @map("hall_no")
+
+  show       Show                @relation(fields: [showId], references: [id])
+  categories ExhibitorCategory[]
+
+  @@index([showId])
+  @@map("exhibitors")
+}
+
+model Category {
+  id                  Int    @id
+  mainCategory        String @map("main_category")
+  categoryType        String @map("category_type")
+  productCategoryType String @map("product_category_type")
+
+  exhibitors ExhibitorCategory[]
+
+  @@map("categories")
+}
+
+model ExhibitorCategory {
+  exhibitorId Int @map("exhibitor_id")
+  categoryId  Int @map("category_id")
+
+  exhibitor Exhibitor @relation(fields: [exhibitorId], references: [id], onDelete: Cascade)
+  category  Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([exhibitorId, categoryId])
+  @@index([categoryId])
+  @@map("exhibitor_categories")
+}
+
+model ConsultSubmission {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("consult_submissions")
+}
