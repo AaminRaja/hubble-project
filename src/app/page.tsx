@@ -3,6 +3,8 @@ import { products } from "../data/products";
 import ConsultForm from "../components/ConsultForm";
 import { getExhibitorStats } from "../lib/data/exhibitors";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const { total, showCount } = await getExhibitorStats();
 
@@ -29,7 +31,9 @@ export default async function Home() {
               <span className="text-3xl font-semibold">{total || "—"}</span>
               <span className="text-white/40 text-sm">exhibitors</span>
             </div>
-            <p className="mt-2 text-sm text-white/40">across {showCount || 0} shows</p>
+            <p className="mt-2 text-sm text-white/40">
+              across {showCount || 0} shows
+            </p>
           </div>
         </div>
       </section>
@@ -45,7 +49,9 @@ export default async function Home() {
               href={`/products/${product.slug}`}
               className="group bg-[#f7f8fa] p-6 border-t-2 border-t-[#2f6fed] hover:bg-white transition-colors"
             >
-              <h3 className="font-semibold text-[#0e1420] mb-2">{product.title}</h3>
+              <h3 className="font-semibold text-[#0e1420] mb-2">
+                {product.title}
+              </h3>
               <p className="text-sm text-[#4b5567]">{product.summary}</p>
               <span className="inline-block mt-4 text-sm text-[#2f6fed] group-hover:underline">
                 View details
@@ -55,7 +61,10 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="consult" className="py-20 px-6 bg-white border-y border-[#dde2ea]">
+      <section
+        id="consult"
+        className="py-20 px-6 bg-white border-y border-[#dde2ea]"
+      >
         <div className="max-w-xl mx-auto">
           <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold mb-8">
             Consult now
