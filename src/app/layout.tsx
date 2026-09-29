@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
+export const dynamic = "force-dynamic";
+
 const display = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
