@@ -176,3 +176,88 @@ export async function syncExhibitors(
     running = false;
   }
 }
+
+export interface SyncPageResult {
+  done: boolean;
+  after: number;
+  fetched: number;
+  totalCount: number;
+  shows: number;
+  exhibitors: number;
+}
+
+export async function syncExhibitorPage(
+  after: number,
+): Promise<SyncPageResult> {
+  const page = await fetchExhibitorPage(after);
+
+  const shows = new Map<number, ApiShow>();
+  const valid = page.customers.filter((c) => {
+    if (!c.show) return false;
+    shows.set(c.showId, c.show);
+    return true;
+  });
+
+  await runInBatches(
+    [...shows].map(([id, show]) => {
+      const data = {
+        showName: show.showName,
+        startDate: parseApiDate(show.startDate),
+        endDate: parseApiDate(show.endDate),
+      };
+      return prisma.show.upsert({
+        where: { id },
+        update: data,
+        create: { id, ...data },
+      });
+    }),
+  );
+
+  await runInBatches(
+    page.categories.map((category) => {
+      const data = {
+        mainCategory: category.mainCategory,
+        categoryType: category.categoryType,
+        productCategoryType: category.productCategoryType,
+      };
+      return prisma.category.upsert({
+        where: { id: category.id },
+        update: data,
+        create: { id: category.id, ...data },
+      });
+    }),
+  );
+
+  await runInBatches(
+    valid.map((c) => {
+      const data = {
+        companyName: c.companyName.trim(),
+        country: c.country,
+        squareLogo: c.squareLogo,
+        userId: c.userId,
+        showId: c.showId,
+        exhibitorType: c.exhibitorDetail?.exhibitorType ?? null,
+        sponsorship: c.exhibitorDetail?.sponsorship ?? null,
+        boothNo: c.exhibitorDetail?.boothNo ?? null,
+        hallNo: c.exhibitorDetail?.hallNo ?? null,
+      };
+      return prisma.exhibitor.upsert({
+        where: { id: c.id },
+        update: data,
+        create: { id: c.id, ...data },
+      });
+    }),
+  );
+
+  const nextAfter = after + page.customers.length;
+  const done = page.customers.length === 0 || nextAfter + 1 >= page.totalCount;
+
+  return {
+    done,
+    after: nextAfter,
+    fetched: page.customers.length,
+    totalCount: page.totalCount,
+    shows: shows.size,
+    exhibitors: valid.length,
+  };
+}
